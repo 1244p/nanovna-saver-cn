@@ -1,6 +1,14 @@
 .. role:: raw-html-m2r(raw)
    :format: html
 
+.. note::
+
+   **简体中文 / Simplified Chinese** —— 本仓库是 NanoVNASaver 的中文分支，
+   界面已完整汉化。中文说明见 `README.zh_CN.rst <README.zh_CN.rst>`_。
+
+   This is a Simplified Chinese fork: the user interface is fully localised.
+   See `README.zh_CN.rst <README.zh_CN.rst>`_ for the Chinese documentation.
+
 .. image:: https://img.shields.io/github/v/release/NanoVNA-Saver/nanovna-saver.svg
    :target: https://github.com/NanoVNA-Saver/nanovna-saver/releases/latest
    :alt: Latest Release
