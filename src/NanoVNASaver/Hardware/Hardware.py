@@ -16,6 +16,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import contextlib
 import logging
 import platform
 from collections import namedtuple
@@ -117,9 +118,19 @@ def get_interfaces() -> list[Interface]:
         )
         iface = Interface("serial", typename)
         iface.port = d.device
-        iface.open()
-        iface.comment = get_comment(iface)
-        iface.close()
+        # The port must always be closed after probing: detect_version() and
+        # get_info() talk to the device and may raise UnicodeDecodeError or
+        # SerialException (unplugged device, odd firmware reply). Without the
+        # finally block the handle leaked, and the next rescan or another
+        # program hit PermissionError(13).
+        try:
+            iface.open()
+            iface.comment = get_comment(iface)
+        except Exception as exc:
+            logger.warning("Probing %s failed: %s", d.device, exc)
+        finally:
+            with contextlib.suppress(Exception):
+                iface.close()
         interfaces.append(iface)
 
     logger.debug("Interfaces: %s", interfaces)
@@ -128,15 +139,22 @@ def get_interfaces() -> list[Interface]:
 
 def get_portinfos() -> list[str]:
     portinfos = []
-    # serial like usb interfaces
     for d in list_ports.comports():
         logger.debug("Found USB:(%04x:%04x) on port %s", d.vid, d.pid, d.device)
+        # Bluetooth and on-board pseudo serial ports are never VNAs;
+        # opening them is slow and frequently fails.
+        if d.vid is None:
+            continue
         iface = Interface("serial", "DEBUG")
         iface.port = d.device
-        iface.open()
-        version = detect_version(iface)
-        iface.close()
-        portinfos.append(version)
+        try:
+            iface.open()
+            portinfos.append(detect_version(iface))
+        except Exception as exc:
+            logger.warning("Reading version of %s failed: %s", d.device, exc)
+        finally:
+            with contextlib.suppress(Exception):
+                iface.close()
     return portinfos
 
 
