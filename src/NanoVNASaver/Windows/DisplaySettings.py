@@ -24,6 +24,7 @@ from PySide6.QtGui import QColor, QColorConstants, QPalette, QShortcut
 
 from ..Charts.Chart import Chart, ChartColors
 from ..Defaults import get_app_config
+from ..i18n import tr, untr
 from ..Marker.Widget import Marker
 from .Bands import BandsWindow
 from .Defaults import make_scrollable
@@ -337,14 +338,20 @@ class DisplaySettingsWindow(QtWidgets.QWidget):
         ) -> QtWidgets.QComboBox:
             box = QtWidgets.QComboBox()
             box.setMinimumHeight(30)
-            box.addItems(selections)
+            box.addItems(selections)  # items are shown translated
             chart = self.app.settings.value(key, val)
-            if box.findText(chart) > -1:
+            # Settings keep the English chart name, the combo shows the
+            # translated label, so accept either spelling here.
+            lookup = tr(chart)
+            if box.findText(lookup) > -1:
+                box.setCurrentText(lookup)
+            elif box.findText(chart) > -1:
                 box.setCurrentText(chart)
             else:
-                box.setCurrentText(val)
+                box.setCurrentText(tr(val))
             box.currentTextChanged.connect(
-                lambda: self.changeChart(x, y, box.currentText())
+                # Convert back to the English identity before storing.
+                lambda: self.changeChart(x, y, untr(box.currentText()))
             )
             charts_layout.addWidget(box, x, y)
             return box
@@ -356,12 +363,12 @@ class DisplaySettingsWindow(QtWidgets.QWidget):
         chart11_selection = _combo_box("Chart11", "S21 Gain", 1, 1)
         chart12_selection = _combo_box("Chart12", "None", 1, 2)
 
-        self.changeChart(0, 0, chart00_selection.currentText())
-        self.changeChart(0, 1, chart01_selection.currentText())
-        self.changeChart(0, 2, chart02_selection.currentText())
-        self.changeChart(1, 0, chart10_selection.currentText())
-        self.changeChart(1, 1, chart11_selection.currentText())
-        self.changeChart(1, 2, chart12_selection.currentText())
+        self.changeChart(0, 0, untr(chart00_selection.currentText()))
+        self.changeChart(0, 1, untr(chart01_selection.currentText()))
+        self.changeChart(0, 2, untr(chart02_selection.currentText()))
+        self.changeChart(1, 0, untr(chart10_selection.currentText()))
+        self.changeChart(1, 1, untr(chart11_selection.currentText()))
+        self.changeChart(1, 2, untr(chart12_selection.currentText()))
 
     def trace_colors(self, layout: QtWidgets.QLayout) -> None:
         for setting, name, attr in (

@@ -27,11 +27,12 @@ resulting data.
 
 import argparse
 import logging
+import os
 import sys
 
 from PySide6 import QtWidgets
 
-from NanoVNASaver import NanoVNASaver
+from NanoVNASaver import NanoVNASaver, i18n
 from NanoVNASaver.About import INFO, VERSION
 from NanoVNASaver.Touchstone import Touchstone
 from NanoVNASaver.utils import get_runtime_information
@@ -67,6 +68,12 @@ def main():
     parser.add_argument(
         "--version", action="version", version=f"NanoVNASaver {VERSION}"
     )
+    parser.add_argument(
+        "--lang",
+        default=os.environ.get("NANOVNA_LANG", "zh_CN"),
+        choices=("zh_CN", "en"),
+        help="UI language: zh_CN or en (default: zh_CN)",
+    )
     args = parser.parse_args()
 
     console_log_level = logging.WARNING
@@ -100,6 +107,10 @@ def main():
         logger.debug(" - %s", lib)
 
     logger.info("Startup...")
+
+    # Localisation layer: must be installed before any QWidget exists.
+    if args.lang != "en":
+        i18n.install()
 
     app = QtWidgets.QApplication(sys.argv)
     window = NanoVNASaver()

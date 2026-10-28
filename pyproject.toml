@@ -153,6 +153,10 @@ ignore = [
     'PLR0912'
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# Chinese UI dictionary: full-width punctuation and CJK text are intentional.
+"src/NanoVNASaver/i18n.py" = ["E501", "RUF001", "RUF002", "RUF003"]
+
 [tool.ruff.lint.mccabe]
 max-complexity = 10
 

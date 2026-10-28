@@ -123,6 +123,9 @@ class Chart(QtWidgets.QWidget):
 
     def __init__(self, name) -> None:
         super().__init__()
+        # `name` is the chart identity: it is stored in the settings and used
+        # for lookups, so it must stay in the original English form. The
+        # displayed text is translated by i18n at draw/setup time.
         self.name: str = name
         self.sweepTitle: str = ""
 
